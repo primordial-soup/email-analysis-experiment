@@ -1,5 +1,4 @@
 #!/bin/sh
-#!/bin/sh
 
 CURDIR=`dirname "$0"`
 cd "$CURDIR/.."
