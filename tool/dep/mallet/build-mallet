@@ -6,3 +6,4 @@ cd "$CURDIR/../../.."
 DIR="dep/Mallet"
 cd $DIR
 make
+make jar
