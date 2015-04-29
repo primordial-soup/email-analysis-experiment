@@ -1,9 +1,0 @@
-#!/bin/sh
-
-CURDIR=`dirname "$0"`
-cd "$CURDIR/.."
-
-DIR="data/enron-email/cmu"
-mkdir -p $DIR
-cd $DIR
-wget -k -c -nH --cut-dirs=2 --mirror -np "http://www.cs.cmu.edu/~enron/"

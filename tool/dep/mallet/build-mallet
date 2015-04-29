@@ -1,7 +1,7 @@
 #!/bin/sh
 
 CURDIR=`dirname "$0"`
-cd "$CURDIR/.."
+cd "$CURDIR/../../.."
 
 DIR="dep/Mallet"
 cd $DIR
