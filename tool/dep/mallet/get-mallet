@@ -1,9 +1,12 @@
 #!/bin/sh
 
+# Downloads source for MALLET NLP library <http://mallet.cs.umass.edu/>
+
 CURDIR=`dirname "$0"`
 cd "$CURDIR/../../.."
 
 DIR="dep"
 mkdir -p $DIR
 cd $DIR
+# git clone will create $DIR/Mallet
 git clone https://github.com/mimno/Mallet.git
