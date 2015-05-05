@@ -1,0 +1,17 @@
+all: output/enron.mallet
+
+data/enron-email/berkeley/enron_with_categories.tar.gz:
+	[ -f $@ ] || ./tool/data/enron-label-berkeley/get-enron-label-berkeley-data
+
+extract/data/enron-email/berkeley/enron_with_categories: \
+		tool/data/enron-label-berkeley/extract-enron-label-berkeley-data \
+		data/enron-email/berkeley/enron_with_categories.tar.gz
+	[ -d $@ ] || ./tool/data/enron-label-berkeley/extract-enron-label-berkeley-data
+
+output/text-and-labels.csv: \
+		bin/extract-email-text-and-labels \
+		extract/data/enron-email/berkeley/enron_with_categories
+	./bin/extract-email-text-and-labels
+
+output/enron.mallet: bin/generate-features output/text-and-labels.csv
+	./bin/generate-features
