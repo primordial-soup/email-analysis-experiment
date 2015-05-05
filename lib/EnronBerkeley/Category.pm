@@ -4,6 +4,7 @@ use Modern::Perl;
 use List::AllUtils qw(zip);
 use Moo;
 use File::Slurp 'read_file';
+use MooX::HandlesVia;
 
 our $top_level_categories = {
 	1 => "Coarse genre",
@@ -13,8 +14,17 @@ our $top_level_categories = {
 };
 our $second_level_categories = { map { chomp; split ' ', $_, 2 } read_file( \*DATA ) };
 
-has [ qw(top_level_category_id
-         second_level_category_id) ] => ( is => 'rw' );
+has category_info => (
+	is => 'rw',
+	handles_via => 'Array',
+	handles => {
+		do {
+			## What each number in the category string represents in order.
+			my @numbers_rep = qw(top_level_category_id second_level_category_id count);
+			map { $numbers_rep[$_] => [ 'get', $_ ] }  0..@numbers_rep-1;
+		}
+	},
+);
 has [ qw(top_level_category_description
          second_level_category_description) ] => ( is => 'lazy' );
 
@@ -27,15 +37,11 @@ sub _build_second_level_category_description {
 	$second_level_categories->{"@{[$self->top_level_category_id]}.@{[$self->second_level_category_id]}"};
 }
 
-has count => ( is => 'rw', );
-
 sub parse_category {
 	my ($klass, $category_string) = @_;
 	# Parse a string for the category information: n1,n2,n3
-	# What each number in the category string represents in order.
-	my @numbers_rep = qw(top_level_category_id second_level_category_id count);
 	my @numbers = split ',', $category_string;
-	EnronBerkeley::Category->new( zip( @numbers_rep, @numbers ) );
+	EnronBerkeley::Category->new( category_info => \@numbers );
 }
 
 1;
