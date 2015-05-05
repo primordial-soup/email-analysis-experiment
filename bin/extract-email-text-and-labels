@@ -1,23 +1,23 @@
 #!/usr/bin/env perl
 
 use Modern::Perl;
-use FindBin;
-use lib "$FindBin::Bin/../lib";
+use FindBin::libs;
 
 use EnronBerkeley;
 use EnronBerkeley::Message;
+use EnronBerkeley::ProjectHelper;
 
 use Text::CSV_XS;
 use Path::Tiny;
 use Term::ProgressBar;
 use List::UtilsBy qw( max_by );
 
-my $toplevel = path($FindBin::Bin)->parent;
+my $toplevel = EnronBerkeley::ProjectHelper->top_level_directory_path;
 
 my $maildir = $toplevel->child(qw(extract data enron-email berkeley enron_with_categories));
 my $dataset = EnronBerkeley->new( directory => $maildir );
 
-my $csv_output_path = $toplevel->child(qw(output))->child('text-and-labels.csv');
+my $csv_output_path = EnronBerkeley::ProjectHelper->output_file('text-and-labels.csv');
 $csv_output_path->parent->mkpath;
 my $csv_output = $csv_output_path->openw_utf8;
 

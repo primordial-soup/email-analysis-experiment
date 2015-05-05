@@ -20,3 +20,4 @@ requires 'Test::More';
 requires 'Text::CSV_XS';
 requires 'YAML';
 requires 'autodie';
+requires 'FindBin::libs';
