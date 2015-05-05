@@ -11,11 +11,6 @@ use Path::Class;
 use MongoDB;
 use Term::ProgressBar;
 
-# tf-idf active learning
-# Lucy computes tf-idf
-# Bayesian query expansion
-
-
 my $maildir = '/home/zaki/sw_projects/email-analysis-experiment/email-analysis-experiment/extract/data/enron-email/cmu/enron_mail_20110402/maildir';
 my $client = MongoDB::MongoClient->new(host => 'localhost', port => 27017);
 my $db = $client->get_database( 'enron_email' );
