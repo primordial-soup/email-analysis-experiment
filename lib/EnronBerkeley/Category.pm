@@ -44,6 +44,9 @@ sub parse_category {
 	EnronBerkeley::Category->new( category_info => \@numbers );
 }
 
+sub FREEZE { $_[0]->category_info }
+sub THAW { __PACKAGE__->new( category_info => $_[2] ) }
+
 1;
 __DATA__
 1.1 Company Business, Strategy, etc. (elaborate in Section 3 [Topics])
