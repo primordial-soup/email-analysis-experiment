@@ -1,0 +1,29 @@
+#!/usr/bin/env perl
+
+use Modern::Perl;
+use autodie qw(:all);
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+
+use Path::Tiny;
+use Env qw(@PATH);
+
+my $toplevel_path = path($FindBin::Bin)->parent;
+
+my $mallet_path = $toplevel_path->child( qw(dep Mallet bin) );
+die "Mallet is not installed in $mallet_path" unless -d $mallet_path;
+
+my $output_dir_path = $toplevel_path->child(qw(output));
+my $labelled_instances_csv_path = $output_dir_path->child('text-and-labels.csv');
+die "Labelled instances have not been generated" unless -f $labelled_instances_csv_path;
+
+my $mallet_output_path = $output_dir_path->child('enron.mallet');
+
+## Add path to mallet script to $ENV{PATH}
+push @PATH, "$mallet_path";
+system( qw(mallet import-file),
+	qw(--remove-stopwords TRUE),
+	#qw(--print-output TRUE),    ## for debugging
+	qw(--input), $labelled_instances_csv_path,
+	qw(--output), $mallet_output_path );
+
