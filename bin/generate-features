@@ -18,5 +18,5 @@ EnronBerkeley::MalletHelper->run_mallet(
 	qw(--remove-stopwords TRUE),
 	#qw(--print-output TRUE),    ## for debugging
 	qw(--input), $labelled_instances_csv_path,
-	qw(--output), $mallet_output_path
+	qw(--output), $mallet_output_path,
 );

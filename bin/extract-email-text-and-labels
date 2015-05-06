@@ -22,7 +22,7 @@ $csv_output_path->parent->mkpath;
 my $csv_output = $csv_output_path->openw_utf8;
 
 my $progress = Term::ProgressBar->new({name => 'E-mails', count => $dataset->number_of_instances, remove => 1, ETA => 'linear' });
-my $csv = Text::CSV_XS->new( { binary => 1, eol => $/, auto_diag => 2 } );
+my $csv = Text::CSV_XS->new( { sep => "\t", binary => 1, eol => $/, auto_diag => 2 } );
 
 my $email_idx = 0;
 my $path_iter = $dataset->_message_iterator;
