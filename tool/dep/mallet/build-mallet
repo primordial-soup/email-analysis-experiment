@@ -5,5 +5,6 @@ cd "$CURDIR/../../.."
 
 DIR="dep/Mallet"
 cd $DIR
+perl -pi -E "s|MEMORY=1g|MEMORY=3g|" bin/mallet
 make
 make jar
