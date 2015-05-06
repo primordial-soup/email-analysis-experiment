@@ -1,3 +1,5 @@
 # directories with the data
 data
 extract
+dep/Mallet
+output
