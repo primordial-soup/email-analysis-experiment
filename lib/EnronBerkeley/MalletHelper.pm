@@ -3,6 +3,7 @@ package EnronBerkeley::MalletHelper;
 use strict;
 use warnings;
 
+use Config;
 use Env qw(@PATH);
 use autodie qw(:all);
 use EnronBerkeley::ProjectHelper;
@@ -21,6 +22,14 @@ BEGIN {
 sub run_mallet {
 	my ($self, @rest) = @_;
 	system( qw(mallet), @rest);
+}
+
+sub Inline {
+	my ($class, $lang) = @_;
+	return unless $lang eq 'Java';
+	my $mallet_dir = $MALLET_PATH->parent;
+	my $classpath = join $Config{path_sep}, ( $mallet_dir->child('class'), $mallet_dir->child(qw(lib mallet-deps.jar)) );
+	{ AUTOSTUDY => 1, CLASSPATH => $classpath, };
 }
 
 
