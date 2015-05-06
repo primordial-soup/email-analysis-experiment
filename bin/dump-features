@@ -1,0 +1,51 @@
+#!/usr/bin/env perl
+
+use Modern::Perl;
+use autodie qw(:all);
+use FindBin::libs;
+use EnronBerkeley::ProjectHelper;
+
+use Inline with => 'EnronBerkeley::MalletHelper';
+use Inline Java => <<JAVA ;
+
+import java.io.*;
+import java.util.*;
+
+class DumpFeatures {
+	public static Object get_features(String file_name) throws IOException, ClassNotFoundException {
+		List<Object> results = new ArrayList<Object>();
+		FileInputStream fis = new FileInputStream(file_name);
+		ObjectInputStream ois = new ObjectInputStream(fis);
+
+		try {
+			results.add(ois.readObject());
+		} catch (OptionalDataException e) {
+			if (!e.eof) throw e;
+		} finally {
+			ois.close();
+		}
+		//System.out.println( results );
+		return results.get(0);
+	}
+}
+JAVA
+
+
+my $mallet_path = EnronBerkeley::ProjectHelper->output_file('enron.mallet');
+
+my $df = DumpFeatures->get_features( "$mallet_path" );
+my $instance_array = $df->toArray;
+my $alphabet = $instance_array->[0]->getAlphabet;
+for my $instance_idx (0..$instance_array->length-1) {
+	my $feat_vec = $instance_array->[$instance_idx]->getData;
+	my $file = $instance_array->[$instance_idx]->getName;
+	say $file;
+	my $ind = $feat_vec->getIndices;
+	my $val = $feat_vec->getValues;
+	my %feat_map;
+	@feat_map{ @{$alphabet->lookupObjects( $ind )} } = @$val;
+	use DDP; p %feat_map;
+}
+
+
+
