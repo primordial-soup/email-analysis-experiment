@@ -1,7 +1,6 @@
 requires 'Mail::Box';
 requires 'Path::Class';
 requires 'Path::Iterator::Rule';
-requires 'Language::Prolog::Yaswi';
 requires 'Types::Path::Tiny';
 requires 'File::Slurp';
 requires 'File::Slurp::Tiny';
