@@ -1,9 +1,11 @@
 #!/usr/bin/env perl
 
 use Modern::Perl;
+use IO::File;
 use autodie qw(:all);
 use FindBin::libs;
 use EnronBerkeley::ProjectHelper;
+use Term::ProgressBar;
 
 use Inline with => 'EnronBerkeley::MalletHelper';
 use Inline Java => <<JAVA ;
@@ -32,20 +34,38 @@ JAVA
 
 
 my $mallet_path = EnronBerkeley::ProjectHelper->output_file('enron.mallet');
+my $svm_output_path = EnronBerkeley::ProjectHelper->output_file('enron.libsvm');
 
 my $df = DumpFeatures->get_features( "$mallet_path" );
 my $instance_array = $df->toArray;
-my $alphabet = $instance_array->[0]->getAlphabet;
+my $alphabet_array = $instance_array->[0]->getAlphabet->toArray;
+
+
+my $progress = Term::ProgressBar->new({name => 'Instances', count => $instance_array->length, remove => 1, ETA => 'linear' });
+my $email_idx = 0;
+
+my $svm_output = $svm_output_path->openw_utf8;
 for my $instance_idx (0..$instance_array->length-1) {
-	my $feat_vec = $instance_array->[$instance_idx]->getData;
-	my $file = $instance_array->[$instance_idx]->getName;
-	say $file;
+	my $instance = $instance_array->[$instance_idx];
+	my $class_label = $instance->getTarget->toString;
+	my $feat_vec = $instance->getData;
+
+	## Which file did the features come from?
+	#my $file = $instance_array->[$instance_idx]->getName;
+	#say $file;
+
 	my $ind = $feat_vec->getIndices;
 	my $val = $feat_vec->getValues;
-	my %feat_map;
-	@feat_map{ @{$alphabet->lookupObjects( $ind )} } = @$val;
-	use DDP; p %feat_map;
+
+	$svm_output->print( $class_label );
+	## need to add one because feature index must start at 1
+	$svm_output->print( sprintf(" %d:%.7f", $ind->[$_] + 1, $val->[$_] ) ) for 0..@$ind-1;
+	$svm_output->say;
+
+	## Show the feature alphabet for the instance
+	#my %feat_map;
+	#@feat_map{ @$alphabet_array[ @$ind ] } = @$val;
+	#use DDP; p %feat_map;
+
+	$progress->update(++$email_idx);
 }
-
-
-
