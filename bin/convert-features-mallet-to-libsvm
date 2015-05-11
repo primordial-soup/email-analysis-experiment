@@ -59,7 +59,10 @@ for my $instance_idx (0..$instance_array->length-1) {
 
 	$svm_output->print( $class_label );
 	## need to add one because feature index must start at 1
-	$svm_output->print( sprintf(" %d:%.7f", $ind->[$_] + 1, $val->[$_] ) ) for 0..@$ind-1;
+	for my $idx (0..$ind->length-1) {
+		next if $val->[$idx] == 0; # the sparse representation returned by Mallet sometimes returns zeroes
+		$svm_output->print( sprintf(" %d:%.7f", $ind->[$idx] + 1, $val->[$idx] ) );
+	}
 	$svm_output->say;
 
 	## Show the feature alphabet for the instance
