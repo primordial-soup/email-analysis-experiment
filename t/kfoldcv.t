@@ -15,7 +15,6 @@ subtest "3-fold on 9 instances" => sub {
 	my $fold = 0;
 	while( my ($train, $test) = $cv_it->() ) {
 		my @both = (@$train, @$test);
-		use DDP; &p([$train, $test]);
 		my $train_set = Set::Scalar->new( @$train );
 		my $test_set = Set::Scalar->new( @$test );
 		cmp_ok ~~@$train, '>=', ~~@$test, 'training set is >= to the testing set';
