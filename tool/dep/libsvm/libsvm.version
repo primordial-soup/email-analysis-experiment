@@ -1,0 +1,4 @@
+LIBSVM_VERSION=3.20
+LIBSVM_BASE="libsvm-$LIBSVM_VERSION"
+LIBSVM_TGZ="$LIBSVM_BASE"".tar.gz"
+LIBSVM_URL="http://www.csie.ntu.edu.tw/~cjlin/libsvm/$LIBSVM_TGZ"

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Downloads source for LIBSVM library <http://www.csie.ntu.edu.tw/~cjlin/libsvm/>
+
+CURDIR=`dirname "$0"`
+. $CURDIR/libsvm.version
+cd "$CURDIR/../../.."
+
+DIR="dep/libsvm"
+mkdir -p $DIR
+cd $DIR
+
+wget -c "$LIBSVM_URL"
+tar xvzf "$LIBSVM_TGZ"
