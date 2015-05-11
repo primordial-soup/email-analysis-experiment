@@ -4,3 +4,4 @@ extract
 dep/Mallet
 dep/libsvm
 output
+_Inline
