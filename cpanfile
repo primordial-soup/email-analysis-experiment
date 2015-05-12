@@ -20,3 +20,5 @@ requires 'Text::CSV_XS';
 requires 'YAML';
 requires 'autodie';
 requires 'FindBin::libs';
+requires 'IPC::Run3';
+requires 'Inline::Java';
