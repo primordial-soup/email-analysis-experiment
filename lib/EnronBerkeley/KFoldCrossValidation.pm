@@ -19,8 +19,7 @@ sub kfold_iterator {
 		return if $fold_idx >= $k_folds;
 		my $test = $folds[$fold_idx];
 		my $train = [ map { $_ == $fold_idx ? () : @{ $folds[$_] } } 0..$k_folds-1 ];
-		$fold_idx++;
-		($train, $test);
+		($train, $test, $fold_idx++);
 	}
 }
 
