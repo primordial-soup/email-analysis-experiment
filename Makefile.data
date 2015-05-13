@@ -1,4 +1,4 @@
-all: output/enron.mallet
+all: output/enron.libsvm.scale
 
 data/enron-email/berkeley/enron_with_categories.tar.gz:
 	[ -f $@ ] || ./tool/data/enron-label-berkeley/get-enron-label-berkeley-data
@@ -15,3 +15,13 @@ output/text-and-labels.csv: \
 
 output/enron.mallet: bin/generate-features output/text-and-labels.csv
 	./bin/generate-features
+
+output/enron.libsvm: \
+		bin/convert-features-mallet-to-libsvm \
+		output/enron.mallet
+	./bin/convert-features-mallet-to-libsvm
+
+output/enron.libsvm.scale: \
+		bin/libsvm-predict \
+		output/enron.libsvm
+	./bin/libsvm-predict
