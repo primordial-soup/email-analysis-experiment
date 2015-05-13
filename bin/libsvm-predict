@@ -1,0 +1,71 @@
+#!/usr/bin/env perl
+
+use Modern::Perl;
+use IO::File;
+use autodie qw(:all);
+use FindBin::libs;
+use EnronBerkeley::ProjectHelper;
+use EnronBerkeley::LIBSVMHelper;
+use EnronBerkeley::KFoldCrossValidation;
+use Term::ProgressBar;
+use IPC::Run3;
+use DateTime::Tiny;
+
+my $basename = "libsvm-predict";
+
+my $k_folds = 10;
+my $validation_trials = 10;
+my $svm_data = EnronBerkeley::ProjectHelper->output_file('enron.libsvm');
+
+my $svm_range_config = EnronBerkeley::ProjectHelper->output_file('enron.libsvm.range');
+my $svm_scaled_data = EnronBerkeley::ProjectHelper->output_file('enron.libsvm.scale');
+
+my $output_path = EnronBerkeley::ProjectHelper->output_file("$basename.@{[ DateTime::Tiny->now =~ s/://gr ]}");
+$output_path->mkpath;
+
+######################
+
+
+my $svm_scaled_data_fh = $svm_scaled_data->openw_utf8;
+run3 [
+	qw(svm-scale),
+	qw(-l   0), # many of the input features are zero
+	( '-s', $svm_range_config), # save scaling parameters
+	$svm_data # input data
+	],
+	undef, $svm_scaled_data_fh, undef;
+
+my @data = $svm_scaled_data->lines;
+for my $run (0..$validation_trials-1) {
+	my $trial_path = $output_path->child( "trial_$run" );
+	$trial_path->mkpath;
+	my $cv_it = EnronBerkeley::KFoldCrossValidation->kfold_iterator( $k_folds, scalar @data );
+	while( my( $train, $test, $fold_id ) = $cv_it->() ) {
+		## get data from each set
+		my @data_train = @data[ @$train ];
+		my @data_test = @data[ @$test ];
+		## write out data in each set
+		my $data_train_path = $trial_path->child( "fold_$fold_id.train" );
+		my $data_test_path = $trial_path->child( "fold_$fold_id.test" );
+
+		say $data_train_path;
+
+		$data_train_path->spew_utf8( @data_train );
+		$data_test_path->spew_utf8( @data_test );
+
+		## run svm-train, svm-predict
+		system("svm-train --help");
+			[
+			qw(svm-train),
+			qw( -s 0 ), # SVM type: C-SVM
+			qw(-t 2) # RBF kernel
+			];
+		die "done";
+		# TODO
+
+		$_->remove for ($data_train_path, $data_test_path);
+	}
+	$trial_path->remove_tree;
+}
+
+$output_path->remove_tree;
