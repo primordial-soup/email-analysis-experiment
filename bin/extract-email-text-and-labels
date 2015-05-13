@@ -11,6 +11,7 @@ use Text::CSV_XS;
 use Path::Tiny;
 use Term::ProgressBar;
 use List::UtilsBy qw( max_by );
+use Digest::MD5 qw(md5);
 
 my $toplevel = EnronBerkeley::ProjectHelper->top_level_directory_path;
 
@@ -26,6 +27,8 @@ my $csv = Text::CSV_XS->new( { sep => "\t", binary => 1, eol => $/, auto_diag =>
 
 my $email_idx = 0;
 my $path_iter = $dataset->_message_iterator;
+
+my $msg_body_seen = {};
 
 while( defined( my $filename = $path_iter->() ) ) {
 	my $file = $filename;
@@ -45,8 +48,16 @@ while( defined( my $filename = $path_iter->() ) ) {
 			$msg->body_single_line                      # [text]
 		];
 
-		## Write it out
-		$csv->say( $csv_output, $instance );
+		## remove non-word and digit characters
+		my $body_only_word = $msg->body_single_line =~ s/[\W\d]//gr;
+		my $hash = md5( $body_only_word ); # hash the body
+
+		## only write if a new message
+		unless( exists $msg_body_seen->{$hash} ) {
+			$msg_body_seen->{$hash} = 1;
+			## Write it out
+			$csv->say( $csv_output, $instance );
+		}
 	}
 
 	$progress->update(++$email_idx);
