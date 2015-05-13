@@ -35,15 +35,25 @@ run3 [
 	],
 	undef, $svm_scaled_data_fh, undef;
 
-my @data = $svm_scaled_data->lines;
+my @svm_scaled_data = $svm_scaled_data->lines;
+my @svm_data_data = $svm_data->lines;
+for my $line_no (0..@svm_scaled_data-1) {
+	# carry through comments in original data if any
+	if( $svm_data_data[$line_no] =~ /(#.*)$/) {
+		my $comment = $1;
+		$svm_scaled_data[$line_no] =~ s/\h*$/ $comment/;
+	}
+}
+$svm_scaled_data->spew_utf8( @svm_scaled_data );
+
 for my $run (0..$validation_trials-1) {
 	my $trial_path = $output_path->child( "trial_$run" );
 	$trial_path->mkpath;
-	my $cv_it = EnronBerkeley::KFoldCrossValidation->kfold_iterator( $k_folds, scalar @data );
+	my $cv_it = EnronBerkeley::KFoldCrossValidation->kfold_iterator( $k_folds, scalar @svm_scaled_data );
 	while( my( $train, $test, $fold_id ) = $cv_it->() ) {
 		## get data from each set
-		my @data_train = @data[ @$train ];
-		my @data_test = @data[ @$test ];
+		my @data_train = @svm_scaled_data[ @$train ];
+		my @data_test = @svm_scaled_data[ @$test ];
 		## write out data in each set
 		my $data_train_path = $trial_path->child( "fold_$fold_id.train" );
 		my $data_test_path = $trial_path->child( "fold_$fold_id.test" );
