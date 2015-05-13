@@ -1,0 +1,10 @@
+#!/bin/sh
+
+CURDIR=`dirname "$0"`
+cd "$CURDIR/../../.."
+
+DIR="data/enron-email/cmu"
+TARBALL="$DIR/enron_mail_20110402.tgz"
+TARGET="extract/$DIR"
+mkdir -p "$TARGET"
+tar xvzf "$TARBALL" -C "$TARGET" 
