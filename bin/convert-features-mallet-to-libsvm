@@ -51,8 +51,8 @@ for my $instance_idx (0..$instance_array->length-1) {
 	my $feat_vec = $instance->getData;
 
 	## Which file did the features come from?
-	#my $file = $instance_array->[$instance_idx]->getName;
-	#say $file;
+	my $file = $instance_array->[$instance_idx]->getName;
+	my $file_libsvm = $file =~ s/://gr; # need to clean the filename for LIBSVM comment
 
 	my $ind = $feat_vec->getIndices;
 	my $val = $feat_vec->getValues;
@@ -63,7 +63,8 @@ for my $instance_idx (0..$instance_array->length-1) {
 		next if $val->[$idx] == 0; # the sparse representation returned by Mallet sometimes returns zeroes
 		$svm_output->print( sprintf(" %d:%.7f", $ind->[$idx] + 1, $val->[$idx] ) );
 	}
-	$svm_output->say;
+	# add the file as a comment (see FAQ "Q: May I put comments in data files?") <http://www.csie.ntu.edu.tw/~cjlin/libsvm/faq.html#f306>
+	$svm_output->say(" # $file_libsvm");
 
 	## Show the feature alphabet for the instance
 	#my %feat_map;
