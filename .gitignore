@@ -1,7 +1,7 @@
 # directories with the data
-data
-extract
-dep/Mallet
-dep/libsvm
-output
-_Inline
+/data
+/extract
+/dep/Mallet
+/dep/libsvm
+/output
+/_Inline
