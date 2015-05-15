@@ -18,6 +18,13 @@ my $toplevel = EnronBerkeley::ProjectHelper->top_level_directory_path;
 my $maildir = $toplevel->child(qw(extract data enron-email berkeley enron_with_categories));
 my $dataset = EnronBerkeley->new( directory => $maildir );
 
+## whether or not we want to have problem to be a multiclass one or not
+my $multiclass_problem = 0;
+
+## the class to consider when $multiclass_problem is false
+## (i.e., when classifying a single class)
+my $single_class_label = 1;
+
 my $csv_output_path = EnronBerkeley::ProjectHelper->output_file('text-and-labels.csv');
 $csv_output_path->parent->mkpath;
 my $csv_output = $csv_output_path->openw_utf8;
@@ -41,11 +48,14 @@ while( defined( my $filename = $path_iter->() ) ) {
 		## Which category has the largest count?
 		my $largest_cat_3 = max_by { $_->count } @cat_top_level_in_3;
 
+		my $label = $multiclass_problem
+			? $largest_cat_3->second_level_category_id
+			: 0+($largest_cat_3->second_level_category_id == $single_class_label);
 		## Input to learning algorithm
 		my $instance = [
-			$msg->file->stringify,                      # [instance name]
-			$largest_cat_3->second_level_category_id,   # [label]
-			$msg->body_single_line                      # [text]
+			$msg->file->stringify,  # [instance name]
+			$label,                 # [label]
+			$msg->body_single_line  # [text]
 		];
 
 		## remove non-word and digit characters
