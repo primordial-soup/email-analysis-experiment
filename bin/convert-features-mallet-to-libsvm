@@ -39,6 +39,7 @@ my $svm_output_path = EnronBerkeley::ProjectHelper->output_file('enron.libsvm');
 my $df = DumpFeatures->get_features( "$mallet_path" );
 my $instance_array = $df->toArray;
 my $alphabet_array = $instance_array->[0]->getAlphabet->toArray;
+say "Alphabet size: @{[$alphabet_array->length]}";
 
 
 my $progress = Term::ProgressBar->new({name => 'Instances', count => $instance_array->length, remove => 1, ETA => 'linear' });
