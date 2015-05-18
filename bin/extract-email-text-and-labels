@@ -12,6 +12,7 @@ use Path::Tiny;
 use Term::ProgressBar;
 use List::UtilsBy qw( max_by );
 use Digest::MD5 qw(md5);
+use YAML;
 
 my $toplevel = EnronBerkeley::ProjectHelper->top_level_directory_path;
 
@@ -29,6 +30,8 @@ my $csv_output_path = EnronBerkeley::ProjectHelper->output_file('text-and-labels
 $csv_output_path->parent->mkpath;
 my $csv_output = $csv_output_path->openw_utf8;
 
+my $primary_cat_yaml_path = EnronBerkeley::ProjectHelper->output_file('primary-cat.yml');
+
 my $progress = Term::ProgressBar->new({name => 'E-mails', count => $dataset->number_of_instances, remove => 1, ETA => 'linear' });
 my $csv = Text::CSV_XS->new( { sep => "\t", binary => 1, eol => $/, auto_diag => 2 } );
 
@@ -36,6 +39,7 @@ my $email_idx = 0;
 my $path_iter = $dataset->_message_iterator;
 
 my $msg_body_seen = {};
+my $primary_cat = {};
 
 while( defined( my $filename = $path_iter->() ) ) {
 	my $file = $filename;
@@ -47,6 +51,8 @@ while( defined( my $filename = $path_iter->() ) ) {
 
 		## Which category has the largest count?
 		my $largest_cat_3 = max_by { $_->count } @cat_top_level_in_3;
+
+		$primary_cat->{$largest_cat_3->second_level_category_id}++;
 
 		my $label = $multiclass_problem
 			? $largest_cat_3->second_level_category_id
@@ -72,6 +78,8 @@ while( defined( my $filename = $path_iter->() ) ) {
 
 	$progress->update(++$email_idx);
 }
+
+YAML::DumpFile($primary_cat_yaml_path, $primary_cat );
 
 ## Done
 $csv->eof;
