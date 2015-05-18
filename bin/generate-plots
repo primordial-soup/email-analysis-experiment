@@ -8,7 +8,7 @@ use YAML;
 use EnronBerkeley::ProjectHelper;
 
 my $categories = YAML::LoadFile(EnronBerkeley::ProjectHelper->output_file('primary-cat.yml'));
-my $pri_cat_count_barplot_output = EnronBerkeley::ProjectHelper->plot_file('pri_cat_count_barplot.tex');
+my $pri_cat_count_barplot_output = EnronBerkeley::ProjectHelper->plot_file('pri_cat_count_barplot.tikz');
 $pri_cat_count_barplot_output->parent->mkpath;
 
 
