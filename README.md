@@ -9,3 +9,10 @@ Rscript ./install.R
 ./tool/data/enron-label-berkeley/get-enron-label-berkeley-data
 ./tool/data/enron-label-berkeley/extract-enron-label-berkeley-data
 ```
+
+# Generate plots
+
+```shell
+export ENRON_PLOT_PATH="/path/to/directory" # default: gfx/ (optional)
+./bin/generate-plots
+```
