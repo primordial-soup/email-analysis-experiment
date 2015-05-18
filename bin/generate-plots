@@ -1,0 +1,30 @@
+#!/usr/bin/env perl
+
+use Modern::Perl;
+use FindBin::libs;
+
+use Statistics::NiceR;
+use YAML;
+use EnronBerkeley::ProjectHelper;
+
+my $categories = YAML::LoadFile(EnronBerkeley::ProjectHelper->output_file('primary-cat.yml'));
+my $pri_cat_count_barplot_output = EnronBerkeley::ProjectHelper->plot_file('pri_cat_count_barplot.tex');
+$pri_cat_count_barplot_output->parent->mkpath;
+
+
+my @cat_id = sort { $a <=> $b } keys $categories;
+my @cat_count = @$categories{@cat_id};
+
+my $r = Statistics::NiceR->new;
+
+$r->assign( 'cat_id', \@cat_id );
+$r->assign( 'cat_count', \@cat_count );
+$r->assign( 'bp_out', "$pri_cat_count_barplot_output" );
+$r->eval_parse( <<'R' );
+require( tikzDevice )
+tikz( bp_out )
+h <- as.table( cat_count )
+names(h) <- cat_id
+barplot( h, xlab = "Category ID", ylab = "Count", main = "UCB Enron e-mail primary categories" )
+dev.off()
+R
