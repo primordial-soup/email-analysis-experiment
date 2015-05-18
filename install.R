@@ -1,1 +1,1 @@
-install.packages('cvTools', repos="http://cran.rstudio.com/")
+install.packages(c('cvTools','tikzDevice'), repos="http://cran.rstudio.com/")
