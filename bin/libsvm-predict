@@ -10,15 +10,23 @@ use EnronBerkeley::KFoldCrossValidation;
 use Term::ProgressBar;
 use IPC::Run3;
 use DateTime::Tiny;
+use Getopt::Std;
+use PDL;
 
 my $basename = "libsvm-predict";
 
-my $k_folds = 10;
-my $validation_trials = 10;
+my $opts = {};
+getopt('vcg', $opts);
+my $k_folds = $opts->{v};
+my $svm_param_C = $opts->{c};
+my $svm_param_RBF_gamma = $opts->{g};
+my $validation_trials = 1; #10
 my $svm_data = EnronBerkeley::ProjectHelper->output_file('enron.libsvm');
+
 
 my $svm_range_config = EnronBerkeley::ProjectHelper->output_file('enron.libsvm.range');
 my $svm_scaled_data = EnronBerkeley::ProjectHelper->output_file('enron.libsvm.scale');
+#my $svm_model_data = EnronBerkeley::ProjectHelper->output_file('enron.libsvm.model');
 
 my $output_path = EnronBerkeley::ProjectHelper->output_file("$basename.@{[ DateTime::Tiny->now =~ s/://gr ]}");
 $output_path->mkpath;
@@ -46,10 +54,19 @@ for my $line_no (0..@svm_scaled_data-1) {
 }
 $svm_scaled_data->spew_utf8( @svm_scaled_data );
 
+#system( "svm-train",
+		#'-v', $k_folds,
+		#'-c', $svm_param_C,
+		#'-g', $svm_param_RBF_gamma,
+		#"$svm_scaled_data", ## training data
+	#);
+
+## Run cross-validation splitting
 for my $run (0..$validation_trials-1) {
 	my $trial_path = $output_path->child( "trial_$run" );
 	$trial_path->mkpath;
 	my $cv_it = EnronBerkeley::KFoldCrossValidation->kfold_iterator( $k_folds, scalar @svm_scaled_data );
+	my $fold_data = {};
 	while( my( $train, $test, $fold_id ) = $cv_it->() ) {
 		## get data from each set
 		my @data_train = @svm_scaled_data[ @$train ];
@@ -57,6 +74,8 @@ for my $run (0..$validation_trials-1) {
 		## write out data in each set
 		my $data_train_path = $trial_path->child( "fold_$fold_id.train" );
 		my $data_test_path = $trial_path->child( "fold_$fold_id.test" );
+		my $data_model_path = $trial_path->child( "fold_$fold_id.model" );
+		my $data_output_path = $trial_path->child( "fold_$fold_id.output" );
 
 		say $data_train_path;
 
@@ -64,17 +83,51 @@ for my $run (0..$validation_trials-1) {
 		$data_test_path->spew_utf8( @data_test );
 
 		## run svm-train, svm-predict
-		system("svm-train --help");
-			[
-			qw(svm-train),
+		system( qw(svm-train),
 			qw( -s 0 ), # SVM type: C-SVM
-			qw(-t 2) # RBF kernel
-			];
-		die "done";
-		# TODO
+			qw(-t 2), # RBF kernel
+			'-c', $svm_param_C,
+			'-g', $svm_param_RBF_gamma,
+			"$data_train_path",
+			"$data_model_path",
+			);
+		system( qw(svm-predict),
+			"$data_test_path",
+			"$data_model_path",
+			"$data_output_path",
+			);
 
-		$_->remove for ($data_train_path, $data_test_path);
+		my @actual = map { 0+ ($_ =~ /^(\d+)/)[0] } @data_test;
+		my @predicted = map { 0+$_ } $data_output_path->lines;
+
+		my ($tp, $tn, $fp, $fn);
+		for my $ind (0..@actual-1) {
+			if( $predicted[$ind] ) {
+				if( $actual[$ind] == $predicted[$ind] ) {
+					$tp++;
+				} else {
+					$fp++;
+				}
+			} else {
+				if( $actual[$ind] == $predicted[$ind] ) {
+					$tn++;
+				} else {
+					$fn++;
+				}
+			}
+		}
+		my $accuracy = ($tp + $tn) / (@actual);
+		my $precision = $tp / ( $tp + $fp ); # Precision = true_positive / (true_positive + false_positive)
+		my $recall = $tp / ( $tp + $fn ); # true_positive / (true_positive + false_negative)
+
+		push @{ $fold_data->{accuracy} }, $accuracy;
+		push @{ $fold_data->{precision} }, $precision;
+		push @{ $fold_data->{recall} }, $recall;
+
+		$_->remove for ($data_train_path, $data_test_path, $data_output_path, $data_model_path);
 	}
+	say "=== Trial @{[ $run+1 ]} ===";
+	say "\u$_ mean = ", pdl( $fold_data->{$_} )->avg for qw(accuracy precision recall);
 	$trial_path->remove_tree;
 }
 
