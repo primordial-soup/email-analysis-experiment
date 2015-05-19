@@ -3,17 +3,24 @@
 use Modern::Perl;
 use FindBin::libs;
 
+use Capture::Tiny qw(capture);
 use EnronBerkeley::MalletHelper;
 
 my $mallet_features_path = EnronBerkeley::ProjectHelper->output_file('enron.mallet');
 
 my @algo = qw(MaxEnt NaiveBayes DecisionTree);
 
-EnronBerkeley::MalletHelper->run_mallet(
-	qw(train-classifier),
-	qw(--input), $mallet_features_path,
-	#qw(--training-portion 0.9),
-	qw(--report train:accuracy),
-	qw(--cross-validation 10),
-	( map { (qw(--trainer), $_) } @algo ),
-);
+#my ($stdout, undef, undef) = capture {
+	EnronBerkeley::MalletHelper->run_mallet(
+		qw(train-classifier),
+		qw(--input), $mallet_features_path,
+		#qw(--training-portion 0.9),
+		#qw(--num-trials 10),
+		qw(--report train:accuracy),
+		qw(--report train:precision),
+		qw(--report train:recall),
+		qw(--cross-validation 10),
+		( map { (qw(--trainer), $_) } @algo ),
+	);
+#};
+#say $stdout;
