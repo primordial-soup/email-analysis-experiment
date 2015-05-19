@@ -22,3 +22,5 @@ requires 'autodie';
 requires 'FindBin::libs';
 requires 'IPC::Run3';
 requires 'Inline::Java';
+requires 'Capture::Tiny';
+requires 'PDL';
