@@ -1,4 +1,4 @@
-all: output/enron.libsvm.scale
+all: output/enron.class.mallet.results output/enron.class.libsvm.results
 
 data/enron-email/berkeley/enron_with_categories.tar.gz:
 	[ -f $@ ] || ./tool/data/enron-label-berkeley/get-enron-label-berkeley-data
@@ -21,7 +21,13 @@ output/enron.libsvm: \
 		output/enron.mallet
 	./bin/convert-features-mallet-to-libsvm
 
-output/enron.libsvm.scale: \
+output/enron.class.mallet.results: bin/generate-classifiers
+	./bin/generate-classifiers | tee $@
+
+output/enron.class.libsvm.results: \
 		bin/libsvm-predict \
 		output/enron.libsvm
-	./bin/libsvm-predict
+	export K_FOLD_CV="10" \
+	SVM_PARAM_C="128.0" \
+	SVM_RBF_GAMMA="0.00048828125"; \
+	./bin/libsvm-predict -v "$$K_FOLD_CV" -c "$$SVM_PARAM_C" -g "$$SVM_RBF_GAMMA" | tee $@
