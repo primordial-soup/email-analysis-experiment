@@ -102,17 +102,17 @@ for my $run (0..$validation_trials-1) {
 
 		my ($tp, $tn, $fp, $fn);
 		for my $ind (0..@actual-1) {
-			if( $predicted[$ind] ) {
-				if( $actual[$ind] == $predicted[$ind] ) {
-					$tp++;
+			if( $actual[$ind] == $predicted[$ind] ) {
+				if( $actual[$ind] ) {
+					$tp++; ## predict T, actually T
 				} else {
-					$fp++;
+					$tn++; ## predict F, actually F
 				}
 			} else {
-				if( $actual[$ind] == $predicted[$ind] ) {
-					$tn++;
+				if( $actual[$ind] ) {
+					$fn++;  ## predict F, but really T
 				} else {
-					$fn++;
+					$fp++;  ## predict T, but really F
 				}
 			}
 		}
